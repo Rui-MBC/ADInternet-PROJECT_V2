@@ -1,7 +1,12 @@
 from requests_oauthlib import OAuth2Session
 from flask import Flask, request, redirect, session, url_for
 from flask.json import jsonify
+import qrcode 
 import os
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
+
 
 app = Flask(__name__)
 
@@ -46,6 +51,7 @@ def callback():
     print(request.url)
     github = OAuth2Session(client_id, state=session['oauth_state'], redirect_uri="http://localhost:5000/callback")
     print(github.authorized)
+    print("a")
     token = github.fetch_token(token_url, client_secret=client_secret,
                                authorization_response=request.url)
 
@@ -58,20 +64,39 @@ def callback():
     session['username'] = info['username']
      #meter username e token na bd
 
-    return redirect(url_for('.profile'))
-
-
-@app.route("/profile", methods=["GET"])
-def profile():
-    """Fetching a protected resource using an OAuth 2 token.
-    """
+    return redirect(url_for('.userapp'))
     
-    return str((session['oauth_token'], session['username'] ))
+
+
+@app.route("/userapp", methods=["GET"])
+def userapp():   
+    return app.send_static_file('layout.html')
+
+@app.route("/userapp/code", methods=["GET"])
+def code_gen(): 
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+
+    qrcode_img = qr.make_image(fill_color="black", back_color="white")
+    print(qrcode_img)
+    plt.imshow(qrcode_img)
+    
+
+    return app.send_static_file('QRcode.html')
+
+@app.route("/userapp/history", methods=["GET"])
+def history():   
+    return app.send_static_file('layout.html')
+
 
 
 if __name__ == "__main__":
     # This allows us to use a plain HTTP callback
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "1"
-
     app.secret_key = os.urandom(24)
-    app.run(debug=True)
+    app.run(host = 'localhost', port = 5000, debug = True)
