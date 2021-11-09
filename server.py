@@ -20,9 +20,13 @@ client_secret = "J05ujBUfQVqy0Y6ElVBW6j9QtkzaZpz5uWeWIY/45n5XgWKLXwtxj/sBvIjXKz9
 authorization_base_url = 'https://fenix.tecnico.ulisboa.pt/oauth/userdialog'
 token_url = 'https://fenix.tecnico.ulisboa.pt/oauth/access_token'
 
+@app.route("/", methods=["GET"])
+def home():   
+    return render_template('home.html')
 
-@app.route("/")
-def demo():
+
+@app.route("/<path:type>")
+def demo(type):
     """Step 1: User Authorization.
 
     Redirect the user/resource owner to the OAuth provider (i.e. Github)
@@ -34,6 +38,7 @@ def demo():
     print(state)
     # State is used to prevent CSRF, keep this for later.
     session['oauth_state'] = state
+    session['messages'] = type
     return redirect(authorization_url)
 
 
@@ -65,10 +70,13 @@ def callback():
     info = github.get('https://fenix.tecnico.ulisboa.pt/api/fenix/v1/person').json()
     session['username'] = info['username']
      #meter username e token na bd
+    url = "."+session['messages']+"app"
 
-    return redirect(url_for('.userapp'))
+    return redirect(url_for(url))
     
-
+@app.route("/adminapp", methods=["GET"])
+def adminapp():   
+    return render_template('newGate.html')
 
 @app.route("/userapp", methods=["GET"])
 def userapp():   
