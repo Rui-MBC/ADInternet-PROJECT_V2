@@ -7,7 +7,7 @@ import string
 import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-
+import requests
 
 
 app = Flask(__name__)
@@ -77,6 +77,42 @@ def callback():
 @app.route("/adminapp", methods=["GET"])
 def adminapp():   
     return render_template('newGate.html')
+
+@app.route("/adminapp/createGate",methods = ['GET','POST'])
+def createGate():  
+    if request.method == 'POST':
+        form_content = request.form.to_dict()
+        try:
+            id= int(form_content['id'])
+        except:
+            resp = {
+                'errorCode' : 9,
+                'errorDescription' : '!!! Bad form !!!'
+            }
+            return jsonify(resp)
+
+        if not form_content or not form_content['id'] or not form_content["location"]:
+            
+            resp = {
+                'errorCode' : 9,
+                'errorDescription' : '!!! Bad form !!!'
+            }
+            return jsonify(resp)
+
+        create_gate_cont = {
+            'id':form_content['id'],
+            'location':form_content["location"]
+        }
+        try:
+            resp = requests.put("http://localhost:8000/gates",json = create_gate_cont)
+        except:
+            resp = {
+                'errorCode' : 7,
+                'errorDescription' : 'Couldn´t access database.'
+            }
+            return jsonify(resp)
+        return jsonify(resp.json())
+
 
 @app.route("/userapp", methods=["GET"])
 def userapp():   
