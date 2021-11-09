@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js">
+    </script>
+    <link rel="stylesheet" type="text/css" 
+       href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.css">
+    <script 
+      src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-xmlrpc/0.4.3/jquery.xmlrpc.js"> </script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+
+    <h3 class="ui block header" style="color:red;">
+      User APP
+    </h3>
+
+    <script type="text/javascript">
+      $(document).ready(function(){
+      $("#qrcode_button").click(function(){
+        $.ajax({
+          url: '/API/users/code',
+          type: "GET",
+          dataType: "json",
+          success: function (data) {
+            console.log(data);
+            $("#qrcode").empty()
+            qrcode_ = new QRCode(document.getElementById("qrcode"),{
+              text: data["code"],
+              width: 200,
+              height: 200,
+              colorDark : "#000000",
+              colorLight : "#ffffff",
+              correctLevel : QRCode.CorrectLevel.H
+            });
+          }
+        });
+
+      })
+
+      $("#history_button").click(function(){
+        console.log("papi");
+    })
+  })
+    </script>
+  </head>
+  <body>
+    <button  class="ui button" id ="qrcode_button">
+      Get QRcode
+    </button>
+    <button  class="ui button" id = "history_button">
+      History
+    </button>
+    <div class="ui divider" id="qrcode"></div>
+  </body>
+</html>

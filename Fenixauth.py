@@ -1,7 +1,9 @@
 from requests_oauthlib import OAuth2Session
-from flask import Flask, request, redirect, session, url_for
+from flask import Flask, render_template,request, redirect, session, url_for
 from flask.json import jsonify
 import qrcode 
+import random
+import string
 import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -70,24 +72,13 @@ def callback():
 
 @app.route("/userapp", methods=["GET"])
 def userapp():   
-    return app.send_static_file('layout.html')
+    return render_template('layout.html')
 
-@app.route("/userapp/code", methods=["GET"])
+@app.route("/API/users/code", methods=["GET"])
 def code_gen(): 
 
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-
-    qrcode_img = qr.make_image(fill_color="black", back_color="white")
-    print(qrcode_img)
-    plt.imshow(qrcode_img)
-    
-
-    return app.send_static_file('QRcode.html')
+    ran = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10))  
+    return {"code": ran}
 
 @app.route("/userapp/history", methods=["GET"])
 def history():   
