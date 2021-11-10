@@ -49,12 +49,12 @@ class GateActivity(Base):
     ##count =  Column(Integer) acho que já não é preciso
     def __repr__(self):
         return "<Gate(id=%d secret='%s', location='%s')>" % (
-                                self.id, self.secret, self.location)
+                                self.gate_id, self.outcome, self.time_stamp)
     def as_json(self):
         return {
-            'id':self.id,
-            'secret':self.secret,
-            'location':self.location,
+            'gate_id':self.gate_id,
+            'outcome':self.outcome,
+            'time_stamp':self.time_stamp,
         }
 Base.metadata.create_all(engine) #Create tables for the data models
 
@@ -63,7 +63,7 @@ session = Session()
 
 
 def newGate(ID,secret,location):
-    gate = Gate(id = ID,secret = secret,location = location,count = 0)
+    gate = Gate(id = ID,secret = secret,location = location)
     session.add(gate)
     session.commit()
 

@@ -111,12 +111,52 @@ def createGate():
                 'errorDescription' : 'Couldn´t access database.'
             }
             return jsonify(resp)
+        print(resp.json())
         return jsonify(resp.json())
 
 
 @app.route("/userapp", methods=["GET"])
 def userapp():   
     return render_template('layout.html')
+
+@app.route("/gateapp", methods=["GET"])
+def gateapp():   
+    return render_template('gate.html')
+
+@app.route("/gateapp/gate", methods=["GET"])
+def gateapp_gate(): 
+
+        form_content = request.form.to_dict()
+        try:
+            id= int(form_content['id'])
+        except:
+            resp = {
+                'errorCode' : 9,
+                'errorDescription' : '!!! Bad form !!!'
+            }
+            return jsonify(resp)
+
+        if not form_content or not form_content['id'] or not form_content["secret"]:
+            
+            resp = {
+                'errorCode' : 9,
+                'errorDescription' : '!!! Bad form !!!'
+            }
+            return jsonify(resp)
+
+        verify_gate = {
+            'id':form_content['id'],
+            'secret':form_content["secret"]
+        }
+
+        try:
+            resp = requests.get("http://localhost:8000/gates/id",json = verify_gate)
+        except:
+            resp = {
+                'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'
+            }    
+        return jsonify(resp)      
 
 @app.route("/API/users/code", methods=["GET"])
 def code_gen(): 

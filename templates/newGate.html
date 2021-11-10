@@ -1,14 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js">
+    </script>
+    <link rel="stylesheet" type="text/css" 
+       href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.css">
+    <script 
+      src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-xmlrpc/0.4.3/jquery.xmlrpc.js"> </script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
-    <div>
-   <form action = "/gateapp/createGate" method="POST">
-    Gate Id: 
-    <textarea id="id" name="id" rows="1" cols="12">
-    </textarea>
+    <h3 class="ui block header" style="color:red;">
+        APP
+    </h3>
 
-    <p>Gate Location:</p>
-    <textarea id="location" name="location" rows="1" cols="12">
-    </textarea>
-    <p> press the submit button to store the gate on the server</p>
-   <input type="submit">
-</form>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#formgate").hide();
+            $("#creategate").click(function(){
+                $("#formgate").show();
+            });
+            $("#showhistory").click(function(){
+                $.ajax({
+                    url: '/adminapp/createGate',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log(data);
+                        $('#videosTable > tbody:last-child').empty()
+                            data.forEach(v => {
+                                $('#videosTable > tbody:last-child').
+                                    append('<tr> <td>'+ v["gate_id"]+'</td><td>' +v["outcome"] + '</td><td>'+ v["time_stamp"]+'</td></tr>');
+                                // TODO  10 - Fill the column with the number of views of each video
+                            });
+                            }
+                    });
+            });
+
+      })
+    </script>
+  </head>
+  <body>
+    <button  class="ui button" id ="creategate">
+        Create Gate 
+    </button>
+    <button  class="ui button" id = "showhistory">
+        Show history 
+    </button>
+
+    <table class="ui celled table selectable" id="history" >
+        <thead>
+          <tr>
+            <th>ID</th>  <th>Outcome</th>   <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+  
+
+    <div id=formgate>
+        <form action = "/adminapp/createGate" method="POST">
+            Gate Id: 
+            <textarea id="id" name="id" rows="1" cols="12">
+            </textarea>
+
+            <p>Gate Location:</p>
+            <textarea id="location" name="location" rows="1" cols="12">
+            </textarea>
+            <p> press the submit button to store the gate on the server</p>
+         <input type="submit">
+        </form>
     </div>
+</body>
