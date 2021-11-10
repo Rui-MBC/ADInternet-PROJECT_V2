@@ -68,7 +68,18 @@ def callback():
     session['oauth_token'] = token
     github = OAuth2Session(client_id, token=session['oauth_token'])
     info = github.get('https://fenix.tecnico.ulisboa.pt/api/fenix/v1/person').json()
+    print(info)
     session['username'] = info['username']
+    user_info={
+        'id' : session['username']
+    }
+    try:
+        resp = requests.put("http://localhost:6000/users/user",json = user_info)
+    except:
+        resp = {
+            'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'
+        } 
      #meter username e token na bd
     url = "."+session['messages']+"app"
 
@@ -123,23 +134,23 @@ def userapp():
 def gateapp():   
     return render_template('gate.html')
 
-@app.route("/gateapp/gate", methods=["GET"])
-def gateapp_gate(): 
+@app.route("/gateapp/gate", methods=["POST"])
+def gate(): 
 
         form_content = request.form.to_dict()
         try:
             id= int(form_content['id'])
         except:
             resp = {
-                'errorCode' : 9,
+                'errorCode' : 92,
                 'errorDescription' : '!!! Bad form !!!'
             }
             return jsonify(resp)
 
-        if not form_content or not form_content['id'] or not form_content["secret"]:
+        if not form_content or not form_content['id'] or not form_content['secret']:
             
             resp = {
-                'errorCode' : 9,
+                'errorCode' : 91,
                 'errorDescription' : '!!! Bad form !!!'
             }
             return jsonify(resp)
@@ -155,8 +166,10 @@ def gateapp_gate():
             resp = {
                 'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'
-            }    
-        return jsonify(resp)      
+                 
+            }
+            return jsonify(resp.json())     
+        return render_template('qr_read.html')
 
 @app.route("/API/users/code", methods=["GET"])
 def code_gen(): 
@@ -166,13 +179,17 @@ def code_gen():
         'code' : code
     }
     try:
-        resp = requests.put("http://localhost:6000/users/user",json = user_info)
+        resp = requests.put("http://localhost:6000/users/qrcode",json = user_info)
     except:
         resp = {
             'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'
         } 
-    return {"code": code}
+    response = resp.json()
+    if response['errorCode'] == 0:
+        return {'code': code}
+    else:
+        return response
 
 @app.route("/userapp/history", methods=["GET"])
 def history():   

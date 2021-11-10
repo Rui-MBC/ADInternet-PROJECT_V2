@@ -27,11 +27,11 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     code = Column(String)
     time_stamp = Column(DateTime)
     def __repr__(self):
-        return "<User(id=%d code='%s', time_stamp='%s')>" % (
+        return "<User(id=%s code='%s', time_stamp='%s')>" % (
                                 self.id, self.code, str(self.time_stamp))
     def as_json(self):
         return {
@@ -42,11 +42,11 @@ class User(Base):
 
 class OpenGate(Base):
     __tablename__ = 'opengate'
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(String, primary_key=True)
     gate = Column(String)
     time_stamp = Column(DateTime)
     def __repr__(self):
-        return "<User(user_id=%d gate='%s', time_stamp='%s')>" % (
+        return "<User(user_id=%s gate='%s', time_stamp='%s')>" % (
                                 self.id, self.code, str(self.time_stamp))
     def as_json(self):
         return {
@@ -75,8 +75,7 @@ def setNewUserCode(ID, newCode, newDate ):
         user.code = newCode
         user.time_stamp = newDate
         session.commit()
-    else:
-        newUser(ID,newCode,newDate)
+   
 
 # def validateCode(ID,code,gate_id):
 #     resp = getUserById(ID)

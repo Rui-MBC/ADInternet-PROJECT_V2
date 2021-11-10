@@ -3,6 +3,7 @@ import datetime
 from datetime import timedelta
 from flask import Flask, render_template, request, send_from_directory, jsonify, json
 import os
+from sqlalchemy.sql.elements import Null
 from sqlalchemy.sql.expression import column
 from sqlalchemy.sql.operators import is_precedent
 from sqlalchemy.sql.schema import MetaData
@@ -17,10 +18,8 @@ app = Flask(__name__)
 ###########################
 # GATE DATABASE ENDPOINTS #
 ###########################
-
-
-@app.route("/users/id", methods = ['PUT'])
-def logInGate():
+@app.route("/users/user", methods = ['PUT'])
+def newUser():
     if request.method == 'PUT':
         try:
             userInfo = request.json 
@@ -38,13 +37,54 @@ def logInGate():
             return jsonify(resp)
         try:
             userInfo["id"]
-            userInfo["secret"]
         except:
             resp = {
                 'errorCode' : 5,
                 'errorDescription':'database had an error with JSON input.'
             }
-            return jsonify(resp)    
+            return jsonify(resp)
+        if not uD.getUserById(userInfo["id"]):  
+            uD.newUser(userInfo["id"],'',datetime.datetime.now()) 
+        
+        resp = {
+                'errorCode' : 0,
+                'errorDescription':''
+            }
+        return jsonify(resp)
+
+
+@app.route("/users/qrcode", methods = ['PUT'])
+def logInUser():
+    if request.method == 'PUT':
+        try:
+            userInfo = request.json 
+        except:
+            response = {
+                    'errorCode':5,
+                    'errorDescription':'DataBase had an error with JSON input.'
+                }
+            return jsonify(response)
+        if not userInfo:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+        try:
+            userInfo["id"]
+            userInfo["code"]
+        except:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)   
+        uD.setNewUserCode(userInfo["id"],userInfo["code"],datetime.datetime.now()) 
+        resp = {
+                'errorCode' : 0,
+                'errorDescription':''
+            }
+        return jsonify(resp)
 
 
 
