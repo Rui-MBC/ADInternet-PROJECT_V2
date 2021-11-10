@@ -160,9 +160,19 @@ def gateapp_gate():
 
 @app.route("/API/users/code", methods=["GET"])
 def code_gen(): 
-
-    ran = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10))  
-    return {"code": ran}
+    code = session['username'] + ''.join(random.choices(string.ascii_uppercase + string.digits, k = 5))
+    user_info={
+        'id' : session['username'],
+        'code' : code
+    }
+    try:
+        resp = requests.put("http://localhost:6000/users/user",json = user_info)
+    except:
+        resp = {
+            'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'
+        } 
+    return {"code": code}
 
 @app.route("/userapp/history", methods=["GET"])
 def history():   
