@@ -22,6 +22,7 @@ token_url = 'https://fenix.tecnico.ulisboa.pt/oauth/access_token'
 
 @app.route("/", methods=["GET"])
 def home():   
+    
     return render_template('home.html')
 
 
