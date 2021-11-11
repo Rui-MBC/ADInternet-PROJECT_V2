@@ -77,17 +77,28 @@ def setNewUserCode(ID, newCode, newDate ):
         session.commit()
    
 
-# def validateCode(ID,code,gate_id):
-#     resp = getUserById(ID)
-#     true1 = str(resp.code) == code
-#     true2 = resp.time_stamp + timedelta(minutes = 2)  > datetime.datetime.now()
-#     if str(resp.code) == code and resp.time_stamp + timedelta(minutes = 2)  > datetime.datetime.now():
-#         resp.time_stamp =  datetime.datetime.now() - timedelta(weeks = 100)
+def validateCode(ID,code):
+    resp = getUserById(ID)
+    print(resp.code, resp.id)
+   # true1 = str(resp.code) == code
+    #true2 = resp.time_stamp + timedelta(minutes = 2)  > datetime.datetime.now()
+    if str(resp.code) == code and resp.time_stamp + timedelta(minutes = 2)  > datetime.datetime.now():
+        resp.time_stamp =  datetime.datetime.now() - timedelta(weeks = 100)
 #         gate = getGateById(gate_id)
 #         gate.count = gate.count + 1
-#         session.commit()
-#         return 0
-#     elif str(resp.code) == code and (resp.time_stamp < datetime.datetime.now() - timedelta(weeks = 50)):
-#         return 2 #code has already been used
-#     else:
-#         return 1
+        session.commit()
+        resp = {
+                'errorCode' : 0,
+                'errorDescription':''
+            }
+    elif str(resp.code) == code and (resp.time_stamp < datetime.datetime.now() - timedelta(weeks = 50)):
+        resp = {
+                'errorCode' : 2,
+                'errorDescription':'code has already been used.'
+            }
+    else:
+        resp = {
+                'errorCode' : 1,
+                'errorDescription':'wrong code.'
+            }
+    return resp

@@ -27,11 +27,12 @@
             console.log(data);
             $("#qrcode").empty()
             qrcode_ = new QRCode(document.getElementById("qrcode"),{
-              text: data["code"],
+              text: JSON.stringify(data),
               width: 200,
               height: 200,
               colorDark : "#000000",
               colorLight : "#ffffff",
+              marginleft: 8,
               correctLevel : QRCode.CorrectLevel.H
             });
           }
@@ -44,6 +45,13 @@
     })
   })
     </script>
+
+<style>
+  p { color: #fff; }
+ div {border-width:20px;
+border-style:solid;
+border-color:white;}
+</style>
   </head>
   <body>
     <button  class="ui button" id ="qrcode_button">
@@ -52,6 +60,6 @@
     <button  class="ui button" id = "history_button">
       History
     </button>
-    <div class="ui divider" id="qrcode"></div>
+    <div class="ui divider" id="qrcode" ></div>
   </body>
 </html>

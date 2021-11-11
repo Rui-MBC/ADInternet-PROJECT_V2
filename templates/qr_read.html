@@ -21,13 +21,37 @@
     
     <div id="qr-reader" style="width: 600px"></div>
 
+    <div id="conas" style="visibility: hidden; display:inline;">{{gate_id}} </div>
+
     <script>
         function onScanSuccess(decodedText, decodedResult) {
-        console.log(`Code scanned = ${decodedText}`, decodedResult);
-    }
-    var html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
+            console.log(`Code scanned = ${decodedText}`, decodedResult);
+            console.log('gate_id=',document.getElementById("conas").innerHTML);
+            
+ 
+            console.log(decodedText,document.getElementById("conas").innerHTML);
+$.ajax({
+                url: '/API/gateapp/code',
+                type: "POST",
+                async: false,
+                //processData: false,
+                contentType: "application/json",
+                data: decodedText,
+                gate_id:document.getElementById("conas").innerHTML, //preciso do gate id para por na dB dos gates que o user entrou
+                dataType: "json",
+                success: function (data) {  
+                    console.log(data);
+
+                    
+                    html5QrcodeScanner.pause();
+                   
+
+
+                },
+            });
+        }
+        var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
     </script>
 
 </body>

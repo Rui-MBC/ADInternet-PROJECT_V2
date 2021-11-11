@@ -87,6 +87,36 @@ def logInUser():
         return jsonify(resp)
 
 
+@app.route("/users/code", methods = ['GET'])
+def verifycode():
+    if request.method == 'GET':
+        try:
+            userInfo = request.json 
+        except:
+            response = {
+                    'errorCode':5,
+                    'errorDescription':'DataBase had an error with JSON input.'
+                }
+            return jsonify(response)
+        if not userInfo:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+        try:
+            userInfo["id"]
+            userInfo["code"]
+        except:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+        resp=uD.validateCode(userInfo["id"],userInfo["code"])
+        print(resp)
+        return resp
+
 
 
 

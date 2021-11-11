@@ -5,9 +5,12 @@ import qrcode
 import random
 import string
 import os
+import json
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import requests
+import time
+from flask import make_response
 
 
 app = Flask(__name__)
@@ -21,8 +24,7 @@ authorization_base_url = 'https://fenix.tecnico.ulisboa.pt/oauth/userdialog'
 token_url = 'https://fenix.tecnico.ulisboa.pt/oauth/access_token'
 
 @app.route("/", methods=["GET"])
-def home():   
-    
+def home():      
     return render_template('home.html')
 
 
@@ -135,6 +137,40 @@ def userapp():
 def gateapp():   
     return render_template('gate.html')
 
+
+@app.route("/API/gateapp/code", methods=["POST"])
+def gatecode(): 
+    if request.method=='POST':
+        userinfo = request.get_json()
+        print(type(userinfo))
+        print("\n\n\n\n\n")
+        print(userinfo)
+        print(userinfo["code"])
+        print("\n\n\n\n\n")
+    
+    code=userinfo["code"]
+    id=userinfo["id"]
+
+    try:
+        resp = requests.get("http://localhost:6000/users/code",json = userinfo)
+    except:
+        resp = {
+            'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'  
+        }
+    
+    
+    resp = {
+        'errorCode' : 0,
+        'errorDescription' : '!!! chupa !!!'
+        }
+    #time.sleep(5)
+    return jsonify(resp)
+        
+        
+
+
+
 @app.route("/gateapp/gate", methods=["POST"])
 def gate(): 
 
@@ -169,12 +205,22 @@ def gate():
             'errorDescription' : 'Couldn´t access database.'
                  
             }
-            return jsonify(resp.json())     
-        return render_template('qr_read.html')
+            return jsonify(resp.json())  
+
+
+        return render_template('qr_read.html', gate_id=form_content['id'] )
+
+
+
+
+
+
+
+
 
 @app.route("/API/users/code", methods=["GET"])
 def code_gen(): 
-    code = session['username'] + ''.join(random.choices(string.ascii_uppercase + string.digits, k = 5))
+    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 5))
     user_info={
         'id' : session['username'],
         'code' : code
@@ -188,7 +234,7 @@ def code_gen():
         } 
     response = resp.json()
     if response['errorCode'] == 0:
-        return {'code': code}
+        return jsonify(user_info)
     else:
         return response
 
