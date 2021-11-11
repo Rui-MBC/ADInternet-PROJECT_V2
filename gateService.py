@@ -113,6 +113,42 @@ def createGate( ):
         #return str(sec)
     if request.method == 'GET':
         return jsonify(gD.listGate())
+
+
+
+@app.route("/gates/newEvent", methods = ['PUT'])
+def newEvent( ):
+     if request.method == 'PUT':
+        try:
+            eventInfo = request.json 
+        except:
+            resp = {
+                    'errorCode':5,
+                    'errorDescription':'DataBase had an error with JSON input.'
+                }
+            return jsonify(resp)
+        if not eventInfo:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+        try:
+            eventInfo["code"]
+            eventInfo["gate_id"]
+        except:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+
+        gD.newEvent(int(eventInfo["gate_id"]),eventInfo["code"],datetime.datetime.now())
+        resp = {
+                'errorCode' : 0,
+                'errorDescription':''
+            }
+        return jsonify(resp)
     
 if __name__ == "__main__":
     app.run(host = 'localhost', port = 8000, debug = True)    

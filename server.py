@@ -145,25 +145,42 @@ def gatecode():
         print(type(userinfo))
         print("\n\n\n\n\n")
         print(userinfo)
-        print(userinfo["code"])
+        print(userinfo[0])
+        print(userinfo[1])
         print("\n\n\n\n\n")
+
+        userdata = {
+            'id' : userinfo[0]["id"],
+            'code' : userinfo[0]["code"],
+            "gate_id" :userinfo[1]["gate_id"]
+        }
     
-    code=userinfo["code"]
-    id=userinfo["id"]
 
     try:
-        resp = requests.get("http://localhost:6000/users/code",json = userinfo)
+        resp = requests.get("http://localhost:6000/users/code",json = userdata)
+    except:
+        resp = {
+            'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'  
+        }
+        return jsonify(resp)
+
+    resp = resp.json()
+
+    eventData={
+            'code' : resp['errorCode'],
+            "gate_id" :userinfo[1]["gate_id"]
+        }
+
+    try:
+        respo = requests.put("http://localhost:8000/gates/newEvent",json = eventData)
     except:
         resp = {
             'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'  
         }
     
-    
-    resp = {
-        'errorCode' : 0,
-        'errorDescription' : '!!! chupa !!!'
-        }
+
     #time.sleep(5)
     return jsonify(resp)
         

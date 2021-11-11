@@ -42,7 +42,8 @@ class User(Base):
 
 class OpenGate(Base):
     __tablename__ = 'opengate'
-    user_id = Column(String, primary_key=True)
+    id =  Column(Integer, primary_key=True)
+    user_id = Column(String)
     gate = Column(String)
     time_stamp = Column(DateTime)
     def __repr__(self):
@@ -76,9 +77,20 @@ def setNewUserCode(ID, newCode, newDate ):
         user.time_stamp = newDate
         session.commit()
    
+def newOpenGate(userId, gateId, timeStamp ):
+    newOpen = OpenGate(user_id = userId,gate = gateId,time_stamp = timeStamp)
+    session.add(newOpen)
+    session.commit()
+
 
 def validateCode(ID,code):
     resp = getUserById(ID)
+    if not resp:
+            resp = {
+                'errorCode' : 3,
+                'errorDescription':'this user does not exist.'
+            }
+            return resp
     print(resp.code, resp.id)
    # true1 = str(resp.code) == code
     #true2 = resp.time_stamp + timedelta(minutes = 2)  > datetime.datetime.now()
@@ -91,6 +103,7 @@ def validateCode(ID,code):
                 'errorCode' : 0,
                 'errorDescription':''
             }
+            
     elif str(resp.code) == code and (resp.time_stamp < datetime.datetime.now() - timedelta(weeks = 50)):
         resp = {
                 'errorCode' : 2,

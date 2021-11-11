@@ -43,7 +43,8 @@ class Gate(Base):
 
 class GateActivity(Base):
     __tablename__ = 'gateactivity'
-    gate_id = Column(Integer, primary_key=True)
+    id= Column(Integer, primary_key=True)
+    gate_id = Column(Integer)
     outcome = Column(String)
     time_stamp = Column(DateTime)
     ##count =  Column(Integer) acho que já não é preciso
@@ -66,6 +67,13 @@ def newGate(ID,secret,location):
     gate = Gate(id = ID,secret = secret,location = location)
     session.add(gate)
     session.commit()
+
+
+def newEvent(gateId,code,timeStamp):
+    event = GateActivity(gate_id = gateId,outcome = code,time_stamp = timeStamp)
+    session.add(event)
+    session.commit()
+
 
 def listGate():
     list = session.query(Gate).all()

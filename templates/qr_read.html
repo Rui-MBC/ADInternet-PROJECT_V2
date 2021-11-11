@@ -11,7 +11,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-xmlrpc/0.4.3/jquery.xmlrpc.js"> </script>
     <script src="https://raw.githubusercontent.com/mebjas/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
+    <script>
+        $(document).ready(function()
+        {
+            $("#error").hide();
+            $("#enter").hide();
+        });
+    </script>
 
 </header>
 
@@ -23,27 +29,48 @@
 
     <div id="conas" style="visibility: hidden; display:inline;">{{gate_id}} </div>
 
+    <p id="error" style="color:red"></p>
+    <i id="confirm" class="check icon" style="color:green;width: 600px"></i>
+
     <script>
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Code scanned = ${decodedText}`, decodedResult);
             console.log('gate_id=',document.getElementById("conas").innerHTML);
             
  
-            console.log(decodedText,document.getElementById("conas").innerHTML);
-$.ajax({
+            
+            msg = "["+decodedText + ",{\"gate_id\" : \"" + document.getElementById("conas").innerHTML+"\"}]"
+            console.log(msg);
+            $.ajax({
                 url: '/API/gateapp/code',
                 type: "POST",
                 async: false,
                 //processData: false,
                 contentType: "application/json",
-                data: decodedText,
-                gate_id:document.getElementById("conas").innerHTML, //preciso do gate id para por na dB dos gates que o user entrou
+                data: msg,
+                //gate_id:document.getElementById("conas").innerHTML, //preciso do gate id para por na dB dos gates que o user entrou
                 dataType: "json",
                 success: function (data) {  
                     console.log(data);
 
+                    if(data["errorCode"] == 0){
+                        $("#error").hide();
+                        console.log("ola");
+                        html5QrcodeScanner.pause();
+                        console.log("ola1");
+                        $("#confirm").text("Tem 5 segundos").show();
+                        console.log("ola2");
+                        setTimeout(console.log("ola4567"), 5000);
+                        $("#confirm").text("Tem 5 segundos").hide();
+                        html5QrcodeScanner.resume();
+                        console.log("ola3");
+                    }
+                    else{
+                        $("#error").text(data["errorDescription"]).show();
+                    }
+
                     
-                    html5QrcodeScanner.pause();
+                    //html5QrcodeScanner.pause();
                    
 
 

@@ -107,6 +107,7 @@ def verifycode():
         try:
             userInfo["id"]
             userInfo["code"]
+            userInfo["gate_id"]
         except:
             resp = {
                 'errorCode' : 5,
@@ -115,6 +116,9 @@ def verifycode():
             return jsonify(resp)
         resp=uD.validateCode(userInfo["id"],userInfo["code"])
         print(resp)
+        if resp["errorCode"]==0:
+            uD.newOpenGate(userInfo["id"],userInfo["gate_id"],datetime.datetime.now())
+        
         return resp
 
 
