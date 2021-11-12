@@ -15,8 +15,52 @@
         $(document).ready(function()
         {
             $("#error").hide();
-            $("#enter").hide();
+            $("#confirm").hide();
         });
+
+        async function wait(ms)
+{
+    console.log("b4");
+
+    var d = new Date();
+    var d2 = null;
+    do { d2 = new Date(); }
+    while(d2-d < ms);
+    console.log("after");
+    return 1;
+};
+
+function showResult(code){
+    if(code == 0){
+        //$("#error").hide();
+        console.log("ola");
+        console.log("ola1");
+        $("#confirm").show();
+  
+                        //console.log("ola2");
+                        //setTimeout(console.log("ola4567"), 5000);
+                        //$("#confirm").hide();
+                        //html5QrcodeScanner.resume();
+                        //console.log("ola3");
+    }
+    else{
+        //html5QrcodeScanner.pause();
+        $("#error").show();
+
+    }
+    await wait(5000);
+    $("#error").hide();
+    $("#confirm").hide();
+   // html5QrcodeScanner.pause();
+
+
+    //html5QrcodeScanner.resume();
+
+                    //html5QrcodeScanner.pause();
+                   
+
+
+};
     </script>
 
 </header>
@@ -27,19 +71,32 @@
     
     <div id="qr-reader" style="width: 600px"></div>
 
-    <div id="conas" style="visibility: hidden; display:inline;">{{gate_id}} </div>
+    <div id="gate_id" style="visibility: hidden; display:inline;">{{gate_id}} </div>
 
-    <p id="error" style="color:red"></p>
-    <i id="confirm" class="check icon" style="color:green;width: 600px"></i>
+   
+   
+   
+    <p id="error" style="color:red">batata</p>
+
+    
+    <div id="confirm">
+        <i  class="check icon" style="color:green;width: 600px"></i>
+        <p  style="color:green">Tem 5 segundos</p>
+    </div>
 
     <script>
+
+
+
+
+
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Code scanned = ${decodedText}`, decodedResult);
-            console.log('gate_id=',document.getElementById("conas").innerHTML);
+            console.log('gate_id=',document.getElementById("gate_id").innerHTML);
             
  
             
-            msg = "["+decodedText + ",{\"gate_id\" : \"" + document.getElementById("conas").innerHTML+"\"}]"
+            msg = "["+decodedText + ",{\"gate_id\" : \"" + document.getElementById("gate_id").innerHTML+"\"}]"
             console.log(msg);
             $.ajax({
                 url: '/API/gateapp/code',
@@ -52,31 +109,20 @@
                 dataType: "json",
                 success: function (data) {  
                     console.log(data);
-
-                    if(data["errorCode"] == 0){
-                        $("#error").hide();
-                        console.log("ola");
-                        html5QrcodeScanner.pause();
-                        console.log("ola1");
-                        $("#confirm").text("Tem 5 segundos").show();
-                        console.log("ola2");
-                        setTimeout(console.log("ola4567"), 5000);
-                        $("#confirm").text("Tem 5 segundos").hide();
-                        html5QrcodeScanner.resume();
-                        console.log("ola3");
-                    }
-                    else{
-                        $("#error").text(data["errorDescription"]).show();
-                    }
-
-                    
-                    //html5QrcodeScanner.pause();
+                    showResult(data["errorCode"]);
                    
-
 
                 },
             });
-        }
+            //$("#error").show();
+            //$("#confirm").show();
+
+            //wait(5000);
+            //$("#error").hide();
+            //$("#confirm").hide();
+            console.log("out")
+        };
+
         var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
     </script>
