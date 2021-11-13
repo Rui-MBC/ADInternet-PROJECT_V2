@@ -14,21 +14,23 @@
     <script>
         $(document).ready(function()
         {
-            $("#error").hide();
-            $("#confirm").hide();
+            interval = setInterval(function(){         
+            },50  /* 10000 ms = 10 sec */
+            ); 
         });
 
-        async function wait(ms)
-{
-    console.log("b4");
+    function wait(ms)
+    {
+        console.log("b4");
 
-    var d = new Date();
-    var d2 = null;
-    do { d2 = new Date(); }
-    while(d2-d < ms);
-    console.log("after");
-    return 1;
-};
+        var d = new Date();
+        var d2 = null;
+        do { d2 = new Date(); }
+        while(d2-d < ms);
+        console.log("after");
+
+    
+    };
 
 function showResult(code){
     if(code == 0){
@@ -36,30 +38,21 @@ function showResult(code){
         console.log("ola");
         console.log("ola1");
         $("#confirm").show();
-  
-                        //console.log("ola2");
-                        //setTimeout(console.log("ola4567"), 5000);
-                        //$("#confirm").hide();
-                        //html5QrcodeScanner.resume();
-                        //console.log("ola3");
     }
     else{
+        console.log("ola1");
         //html5QrcodeScanner.pause();
         $("#error").show();
 
     }
-    await wait(5000);
-    $("#error").hide();
-    $("#confirm").hide();
    // html5QrcodeScanner.pause();
-
-
     //html5QrcodeScanner.resume();
+    //html5QrcodeScanner.pause();
+};
 
-                    //html5QrcodeScanner.pause();
-                   
-
-
+function hideResult(){
+    $("#confirm").hide();
+    $("#error").hide();
 };
     </script>
 
@@ -67,6 +60,19 @@ function showResult(code){
 
 
 <body>
+    <div id=formgate>
+        <form action = "/gateapp/gate" method="POST">
+            Gate Id: 
+            <textarea id="id" name="id" rows="1" cols="12">
+            </textarea>
+    
+            <p>Gate Secret:</p>
+            <textarea id="secret" name="secret" rows="1" cols="12">
+            </textarea>
+            <p> press the submit button to store the gate on the server</p>
+         <input type="submit">
+        </form>
+    </div>
 
     
     <div id="qr-reader" style="width: 600px"></div>
@@ -76,26 +82,20 @@ function showResult(code){
    
    
    
-    <p id="error" style="color:red">batata</p>
+    <p id="error" style="display: none;color:red">Invalid Code, Try Again</p>
+    <p id="confirm"  style="display: none;color:green">Tem 5 segundos</p>
 
     
-    <div id="confirm">
+    <!-- <div id="confirawefrm">
         <i  class="check icon" style="color:green;width: 600px"></i>
         <p  style="color:green">Tem 5 segundos</p>
-    </div>
+    </div> -->
 
     <script>
-
-
-
-
 
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Code scanned = ${decodedText}`, decodedResult);
             console.log('gate_id=',document.getElementById("gate_id").innerHTML);
-            
- 
-            
             msg = "["+decodedText + ",{\"gate_id\" : \"" + document.getElementById("gate_id").innerHTML+"\"}]"
             console.log(msg);
             $.ajax({
@@ -107,11 +107,22 @@ function showResult(code){
                 data: msg,
                 //gate_id:document.getElementById("conas").innerHTML, //preciso do gate id para por na dB dos gates que o user entrou
                 dataType: "json",
-                success: function (data) {  
-                    console.log(data);
-                    showResult(data["errorCode"]);
-                   
-
+                success: function (data) {
+                    $("#confirm").hide();
+                    $("#error").hide();
+                    if(data["errorCode"] == 0){
+                        console.log("acertou")
+                        
+                        $("#confirm").show();
+                        clearInterval(interval);
+                        interval = setInterval(function(){   
+                            $("#confirm").hide();        
+                        },5000  /* 10000 ms = 10 sec */
+                        ); 
+                    }
+                    else{
+                        $("#error").show();
+                    }             
                 },
             });
             //$("#error").show();

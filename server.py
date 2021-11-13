@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 from requests_oauthlib import OAuth2Session
 from flask import Flask, render_template,request, redirect, session, url_for
 from flask.json import jsonify
@@ -12,7 +13,8 @@ import requests
 import time
 from flask import make_response
 
-
+#admin_list = ["ist14028"]
+administrator = "ist423523"
 app = Flask(__name__)
 
 
@@ -24,12 +26,26 @@ authorization_base_url = 'https://fenix.tecnico.ulisboa.pt/oauth/userdialog'
 token_url = 'https://fenix.tecnico.ulisboa.pt/oauth/access_token'
 
 @app.route("/", methods=["GET"])
-def home():      
+def home():  
+   
+    return render_template('home.html')
+
+   
+    try:
+        user = session["username"]
+        secret = session["secret"]
+        print (user, secret)
+        #comparar com a DB
+
+    except:
+        return redirect(url_for(".login"))
+
+    
     return render_template('home.html')
 
 
-@app.route("/<path:type>")
-def demo(type):
+@app.route("/login/<path:type>")
+def login(type):
     """Step 1: User Authorization.
 
     Redirect the user/resource owner to the OAuth provider (i.e. Github)
@@ -37,11 +53,11 @@ def demo(type):
     """
     github = OAuth2Session(client_id, redirect_uri="http://localhost:5000/callback")
     authorization_url, state = github.authorization_url(authorization_base_url)
-    print(authorization_url)
-    print(state)
+    #print( authorization_url)
+    #print(state)
     # State is used to prevent CSRF, keep this for later.
     session['oauth_state'] = state
-    session['messages'] = type
+    session['type'] = type
     return redirect(authorization_url)
 
 
@@ -60,7 +76,7 @@ def callback():
 
     print(request.url)
     github = OAuth2Session(client_id, state=session['oauth_state'], redirect_uri="http://localhost:5000/callback")
-    print(github.authorized)
+    #print(github.authorized)
     print("a")
     token = github.fetch_token(token_url, client_secret=client_secret,
                                authorization_response=request.url)
@@ -68,13 +84,17 @@ def callback():
     # At this point you can fetch protected resources but lets save
     # the token and show how this is done from a persisted token
     # in /profile.
-    session['oauth_token'] = token
-    github = OAuth2Session(client_id, token=session['oauth_token'])
+    #session['oauth_token'] = token
+    github = OAuth2Session(client_id, token=token)
     info = github.get('https://fenix.tecnico.ulisboa.pt/api/fenix/v1/person').json()
-    print(info)
+    #print(info ,"\n\n\n")
+    #session.pop("oauth_state")
     session['username'] = info['username']
+    session["secret"] =str(os.urandom(24))
+    #print(str(session['oauth_token']['access_token']))
     user_info={
-        'id' : session['username']
+        'id' : session['username'],
+        'secret' : str(session['secret'])
     }
     try:
         resp = requests.put("http://localhost:6000/users/user",json = user_info)
@@ -84,13 +104,67 @@ def callback():
             'errorDescription' : 'Couldn´t access database.'
         } 
      #meter username e token na bd
-    url = "."+session['messages']+"app"
+    url = "."+session['type']
 
     return redirect(url_for(url))
     
 @app.route("/adminapp", methods=["GET"])
-def adminapp():   
-    return render_template('newGate.html')
+def adminapp(): 
+    print (session)
+    print("imgonnatry admin") 
+    i=1
+    try:        
+        print("\n\nvalidating 1")
+        user = session["username"]
+        secret = session["secret"]
+        if"adminapp" == session['type'] :
+            print("type is right   : ", session['type'])
+        else:raise ValueError("")
+        print("\nvalidating 2 \n\n")
+        print (user, secret,type)
+        userdata = {
+            'id' : user
+        }
+        #comparar com a DB
+        resp = requests.get("http://localhost:6000/users/validUser",json = userdata)
+        userInfo = resp.json()
+        if (userInfo['errorCode']==0):
+            if(userInfo['userId']==user and userInfo['userSecret']==secret):
+                pass
+            else:raiseExceptions
+        else:raiseExceptions
+    except :
+        return redirect(url_for(".login",type="adminapp"))
+    #falta confirmar se o login esta na variavel adminisrator 
+    return render_template('admin.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route("/adminapp/activity", methods=['GET'])
+def returnsActivity():
+    print("uno")
+    try:
+        resp = requests.put("http://localhost:8000/gates/activity" )
+        print("dos")
+    except:
+        print("tres")
+        resp = {
+            'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'
+        } 
+
+    print(resp.json())
+    return resp.json()
 
 @app.route("/adminapp/createGate",methods = ['GET','POST'])
 def createGate():  
@@ -130,8 +204,32 @@ def createGate():
 
 
 @app.route("/userapp", methods=["GET"])
-def userapp():   
-    return render_template('layout.html')
+def userapp(): 
+    print (session)
+    print("imgonnatry user") 
+    try:
+        user = session["username"]
+        secret = session["secret"]
+
+        if"userapp" == session['type'] :
+            print("type is right   : ", session['type'])
+        else:raise ValueError("")        
+        print (user, secret,type)
+        userdata = {
+            'id' : user
+        }
+        #comparar com a DB
+        resp = requests.get("http://localhost:6000/users/validUser",json = userdata)
+        userInfo = resp.json()
+        if (userInfo['errorCode']==0):
+            if(userInfo['userId']==user and userInfo['userSecret']==secret):
+                pass
+            else:raiseExceptions
+        else:raiseExceptions
+    except:
+        return redirect(url_for(".login",type="userapp"))
+
+    return render_template('user.html')
 
 @app.route("/gateapp", methods=["GET"])
 def gateapp():   
@@ -166,9 +264,13 @@ def gatecode():
         return jsonify(resp)
 
     resp = resp.json()
+    if(resp['errorCode'] == 0):
+        validation = "Success"
+    else:
+        validation = "Fail to Open"
 
     eventData={
-            'code' : resp['errorCode'],
+            'code' : validation,
             "gate_id" :userinfo[1]["gate_id"]
         }
 
@@ -256,8 +358,19 @@ def code_gen():
         return response
 
 @app.route("/userapp/history", methods=["GET"])
-def history():   
-    return app.send_static_file('layout.html')
+def history(): 
+    info = {"user" : session["username"]}
+    try:
+        resp = requests.get("http://localhost:6000/users/history",json =info)
+    except:
+        resp = {
+            'errorCode' : 7,
+            'errorDescription' : 'Couldn´t access database.'
+        } 
+    response = resp.json()
+
+    return response  
+
 
 
 

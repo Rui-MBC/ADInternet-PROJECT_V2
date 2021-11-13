@@ -149,6 +149,12 @@ def newEvent( ):
                 'errorDescription':''
             }
         return jsonify(resp)
+
+@app.route("/gates/activity", methods = ['PUT'])
+def gatesActivity( ):
+    gates_list = gD.Activity_list()
+    print(gates_list)
+    return {"list" : gates_list}
     
 if __name__ == "__main__":
     app.run(host = 'localhost', port = 8000, debug = True)    

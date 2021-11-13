@@ -37,6 +37,7 @@ def newUser():
             return jsonify(resp)
         try:
             userInfo["id"]
+            userInfo['secret']
         except:
             resp = {
                 'errorCode' : 5,
@@ -44,7 +45,9 @@ def newUser():
             }
             return jsonify(resp)
         if not uD.getUserById(userInfo["id"]):  
-            uD.newUser(userInfo["id"],'',datetime.datetime.now()) 
+            uD.newUser(userInfo["id"],'',userInfo['secret'],datetime.datetime.now())
+        else:
+            uD.setNewUserSecret(userInfo["id"],userInfo['secret']) 
         
         resp = {
                 'errorCode' : 0,
@@ -52,6 +55,40 @@ def newUser():
             }
         return jsonify(resp)
 
+@app.route("/users/validUser", methods = ['GET'])
+def validateUser():
+    if request.method == 'GET':
+        try:
+            userInfo = request.json 
+        except:
+            response = {
+                    'errorCode':5,
+                    'errorDescription':'DataBase had an error with JSON input.'
+                }
+            return jsonify(response)
+        if not userInfo:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+        try:
+            userInfo["id"]
+        except:
+            resp = {
+                'errorCode' : 5,
+                'errorDescription':'database had an error with JSON input.'
+            }
+            return jsonify(resp)
+        User=uD.getUserById(userInfo["id"])
+        user =User.as_json()
+        resp = {
+                'errorCode' : 0,
+                'errorDescription':'',
+                'userId':user['id'],
+                'userSecret':user['secret'],
+        }
+        return jsonify(resp)
 
 @app.route("/users/qrcode", methods = ['PUT'])
 def logInUser():
@@ -86,6 +123,14 @@ def logInUser():
             }
         return jsonify(resp)
 
+@app.route("/users/history", methods = ['GET'])
+def history():
+    info = request.json 
+    user = info["user"]
+    user_list = uD.history_list(user)
+    print(user_list)
+    return {"list" : user_list}
+
 
 @app.route("/users/code", methods = ['GET'])
 def verifycode():
@@ -115,7 +160,7 @@ def verifycode():
             }
             return jsonify(resp)
         resp=uD.validateCode(userInfo["id"],userInfo["code"])
-        print(resp)
+        #print(resp)
         if resp["errorCode"]==0:
             uD.newOpenGate(userInfo["id"],userInfo["gate_id"],datetime.datetime.now())
         

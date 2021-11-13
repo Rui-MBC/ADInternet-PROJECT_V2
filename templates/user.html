@@ -19,6 +19,8 @@
     <script type="text/javascript">
       $(document).ready(function(){
       $("#qrcode_button").click(function(){
+        
+        $("#history").hide();
         $.ajax({
           url: '/API/users/code',
           type: "GET",
@@ -35,6 +37,7 @@
               marginleft: 8,
               correctLevel : QRCode.CorrectLevel.H
             });
+            $("#qrcode").show();
           }
         });
 
@@ -42,6 +45,22 @@
 
       $("#history_button").click(function(){
         console.log("papi");
+        $("#qrcode").hide();
+        
+        $.ajax({
+          url: '/userapp/history',
+          type: "GET",
+          dataType: "json",
+          success: function (data) {
+             console.log(data);
+            $('#history > tbody:last-child').empty()
+            data["list"].forEach(v => {
+              $('#history > tbody:last-child').
+              append('<tr> <td>'+ v["gate"]+'</td><td>'+ v["time_stamp"]+'</td></tr>');
+            });
+            $("#history").show();
+          }
+        });
     })
   })
     </script>
@@ -61,5 +80,14 @@ border-color:white;}
       History
     </button>
     <div class="ui divider" id="qrcode" ></div>
+    <table style="display: none" class="ui celled table selectable" id="history" >
+      <thead>
+        <tr>
+          <th>GateID</th>  <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
   </body>
 </html>

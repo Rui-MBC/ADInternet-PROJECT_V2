@@ -50,8 +50,9 @@ class GateActivity(Base):
     ##count =  Column(Integer) acho que já não é preciso
     def __repr__(self):
         return "<Gate(id=%d secret='%s', location='%s')>" % (
-                                self.gate_id, self.outcome, self.time_stamp)
-    def as_json(self):
+            self.gate_id, self.outcome, self.time_stamp)
+                
+    def to_dictionary(self):
         return {
             'gate_id':self.gate_id,
             'outcome':self.outcome,
@@ -82,3 +83,16 @@ def listGate():
 def getGateById(ID):
     resp = session.query(Gate).filter(Gate.id == ID).first()
     return resp
+
+def Activity_list():
+    ret_list = []
+    lv = Activity()
+    for v in lv:
+        vd = v.to_dictionary()
+        ret_list.append(vd)
+    return ret_list
+
+def Activity():
+    return session.query(GateActivity).all()
+
+

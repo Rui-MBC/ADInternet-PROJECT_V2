@@ -18,25 +18,26 @@
 
     <script type="text/javascript">
         $(document).ready(function(){
-            $("#formgate").hide();
             $("#creategate").click(function(){
+                $("#activity").hide();
                 $("#formgate").show();
             });
             $("#showhistory").click(function(){
+                $("#formgate").hide();
+                $("#activity").show();
                 $.ajax({
-                    url: '/adminapp/createGate',
+                    url: '/adminapp/activity',
                     type: "GET",
                     dataType: "json",
                     success: function (data) {
                         console.log(data);
-                        $('#videosTable > tbody:last-child').empty()
-                            data.forEach(v => {
-                                $('#videosTable > tbody:last-child').
+                        $('#activity > tbody:last-child').empty()
+                            data["list"].forEach(v => {
+                                $('#activity > tbody:last-child').
                                     append('<tr> <td>'+ v["gate_id"]+'</td><td>' +v["outcome"] + '</td><td>'+ v["time_stamp"]+'</td></tr>');
-                                // TODO  10 - Fill the column with the number of views of each video
                             });
-                            }
-                    });
+                    }
+                });
             });
 
       })
@@ -47,21 +48,20 @@
         Create Gate 
     </button>
     <button  class="ui button" id = "showhistory">
-        Show history 
+        Show Activity 
     </button>
 
-    <table class="ui celled table selectable" id="history" >
+    <table style="display: none" class="ui celled table selectable" id="activity" >
         <thead>
           <tr>
-            <th>ID</th>  <th>Outcome</th>   <th>Time</th>
+            <th>GateID</th>  <th>Outcome</th>   <th>Time</th>
           </tr>
         </thead>
         <tbody>
         </tbody>
     </table>
-  
 
-    <div id=formgate>
+    <div style="display: none" id=formgate>
         <form action = "/adminapp/createGate" method="POST">
             Gate Id: 
             <textarea id="id" name="id" rows="1" cols="12">
