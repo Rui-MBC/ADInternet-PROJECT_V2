@@ -112,7 +112,7 @@ def createGate( ):
             gD.newGate(int(gateInfo["id"]), gateInfo["secret"] ,gateInfo["location"])
             response = {
                     'errorCode':0,
-                    'errorDescription':''
+                    'errorDescription':'no error'
                 }        
         else:
             response = {
@@ -162,9 +162,11 @@ def newEvent( ):
 
 @app.route("/gates/activity", methods = ['GET'])
 def gatesActivity( ):
-    gates_list = gD.Activity_list()
-    print(gates_list)
-    return {"list" : gates_list}
-    
+    try:
+        gates_list = gD.Activity_list()
+        return {"list" : gates_list}
+    except:
+        return {"list" : []}
+
 if __name__ == "__main__":
     app.run(host = 'localhost', port = 8001, debug = True)    

@@ -72,6 +72,7 @@ def newUser(ID,CODE,SECRET,TIME):
 def getUserById(ID):
     resp = session.query(User).filter(User.id == ID).first()
     return resp
+    
 def getHistoryById(ID):
     resp = session.query(OpenGate).filter(OpenGate.user_id == ID).all()
     return resp

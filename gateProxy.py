@@ -60,7 +60,7 @@ def logInGate():
                 resp = requests.get("http://localhost:8002/gates/id",json = gateInfo)
             except:
                 resp = {
-                    'errorCode':10,
+                    'errorCode':7,
                     'errorDescription':'counldn\'t contact any of the databases'
                 }
 
@@ -113,7 +113,7 @@ def createGate( ):
             if response['errorCode'] == 0:
                 resp = {
                     'errorCode' : 0,
-                    'errorDescription' : '',
+                    'errorDescription' : 'no error',
                     'secret':str(sec)
                 }
               
@@ -130,7 +130,7 @@ def createGate( ):
             if response['errorCode'] == 0: 
                 resp= {
                     'errorCode' : 0,
-                    'errorDescription' : '',
+                    'errorDescription' : 'no error',
                     'secret':str(sec)}
               
             else: resp=response       

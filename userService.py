@@ -44,15 +44,30 @@ def newUser():
                 'errorDescription':'database had an error with JSON input.'
             }
             return jsonify(resp)
-        if not uD.getUserById(userInfo["id"]):  
-            uD.newUser(userInfo["id"],'',userInfo['secret'],datetime.datetime.now())
+        if not uD.getUserById(userInfo["id"]):
+            try:  
+                uD.newUser(userInfo["id"],'',userInfo['secret'],datetime.datetime.now())
+            except:
+                resp = {
+                    'errorCode' : 6,
+                    'errorDescription':'database failed.'
+                }
+                return jsonify(resp)
+
         else:
-            uD.setNewUserSecret(userInfo["id"],userInfo['secret']) 
+            try:
+                uD.setNewUserSecret(userInfo["id"],userInfo['secret']) 
+            except:
+                resp = {
+                    'errorCode' : 6,
+                    'errorDescription':'database failed.'
+                }
+                return jsonify(resp)
         
         resp = {
-                'errorCode' : 0,
-                'errorDescription':''
-            }
+            'errorCode' : 0,
+            'errorDescription':'Success'
+        }
         return jsonify(resp)
 
 @app.route("/users/validUser", methods = ['GET'])
@@ -80,11 +95,18 @@ def validateUser():
                 'errorDescription':'database had an error with JSON input.'
             }
             return jsonify(resp)
-        User=uD.getUserById(userInfo["id"])
-        user =User.as_json()
+        try:
+            User=uD.getUserById(userInfo["id"])
+            user =User.as_json()
+        except:
+            resp = {
+                'errorCode' : 6,
+                'errorDescription':'database failed.'
+            }
+            return jsonify(resp)
         resp = {
                 'errorCode' : 0,
-                'errorDescription':'',
+                'errorDescription':'Success',
                 'userId':user['id'],
                 'userSecret':user['secret'],
         }
@@ -115,20 +137,30 @@ def logInUser():
                 'errorCode' : 5,
                 'errorDescription':'database had an error with JSON input.'
             }
-            return jsonify(resp)   
-        uD.setNewUserCode(userInfo["id"],userInfo["code"],datetime.datetime.now()) 
+            return jsonify(resp)  
+        try: 
+            uD.setNewUserCode(userInfo["id"],userInfo["code"],datetime.datetime.now()) 
+        except:
+            resp = {
+                'errorCode' : 6,
+                'errorDescription':'database failed.'
+            }
+            return jsonify(resp)
+
         resp = {
                 'errorCode' : 0,
-                'errorDescription':''
+                'errorDescription':'Success'
             }
         return jsonify(resp)
 
 @app.route("/users/history", methods = ['GET'])
 def history():
-    info = request.json 
-    user = info["user"]
-    user_list = uD.history_list(user)
-    print(user_list)
+    try:
+        info = request.json
+        user = info["user"]
+        user_list = uD.history_list(user) 
+    except:
+        return {"list" : []}
     return {"list" : user_list}
 
 
@@ -159,11 +191,23 @@ def verifycode():
                 'errorDescription':'database had an error with JSON input.'
             }
             return jsonify(resp)
-        resp=uD.validateCode(userInfo["id"],userInfo["code"])
-        #print(resp)
+        try:
+            resp=uD.validateCode(userInfo["id"],userInfo["code"])
+        except:
+            resp = {
+                'errorCode' : 6,
+                'errorDescription':'database failed.'
+            }
+            return jsonify(resp)
         if resp["errorCode"]==0:
-            uD.newOpenGate(userInfo["id"],userInfo["gate_id"],datetime.datetime.now())
-        
+            try:
+                uD.newOpenGate(userInfo["id"],userInfo["gate_id"],datetime.datetime.now())
+            except:
+                resp = {
+                    'errorCode' : 6,
+                    'errorDescription':'database failed.'
+                }
+                return jsonify(resp)
         return resp
 
 

@@ -13,8 +13,7 @@ import requests
 import time
 from flask import make_response
 
-#admin_list = ["ist14028"]
-administrator = "ist423523"
+
 app = Flask(__name__)
 
 
@@ -28,19 +27,6 @@ token_url = 'https://fenix.tecnico.ulisboa.pt/oauth/access_token'
 @app.route("/", methods=["GET"])
 def home():  
    
-    return render_template('home.html')
-
-   
-    try:
-        user = session["username"]
-        secret = session["secret"]
-        print (user, secret)
-        #comparar com a DB
-
-    except:
-        return redirect(url_for(".login"))
-
-    
     return render_template('home.html')
 
 
@@ -110,23 +96,22 @@ def callback():
     
 @app.route("/adminapp", methods=["GET"])
 def adminapp(): 
-    print (session)
-    print("imgonnatry admin") 
-    i=1
     try:        
-        print("\n\nvalidating 1")
+
         user = session["username"]
         secret = session["secret"]
         if"adminapp" == session['type'] :
-            print("type is right   : ", session['type'])
+            print("\n type is right   : ", session['type'])
         else:raise ValueError("")
-        print("\nvalidating 2 \n\n")
-        print (user, secret,type)
         userdata = {
             'id' : user
         }
-        #comparar com a DB
-        resp = requests.get("http://localhost:6000/users/validUser",json = userdata)
+        
+        try:
+            resp = requests.get("http://localhost:6000/users/validUser",json = userdata)
+        except:
+            return redirect(url_for(".home"))
+
         userInfo = resp.json()
         if (userInfo['errorCode']==0):
             if(userInfo['userId']==user and userInfo['userSecret']==secret):
@@ -134,43 +119,28 @@ def adminapp():
             else:raiseExceptions
         else:raiseExceptions
     except :
-        return redirect(url_for(".login",type="adminapp"))
-    #falta confirmar se o login esta na variavel adminisrator 
+        return redirect(url_for(".login",type="adminapp")) 
     return render_template('admin.html')
-
-
-
-
-
-
-
-
-
-
 
 
 
 @app.route("/adminapp/activity", methods=['GET'])
 def returnsActivity():
-    print("uno")
     try:
         resp = requests.get("http://localhost:8000/gates/activity" )
-        print("dos")
     except:
-        print("tres")
         resp = {
             'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'
         } 
-
-    print(resp.json())
+        return jsonify(resp) 
     return resp.json()
 
 @app.route("/adminapp/gate",methods = ['GET','POST'])
 def createGate():  
-    if request.method == 'POST':
-        form_content = request.get_json()
+    if request.method == 'POST':   
         try:
+            form_content = request.get_json()
             id= int(form_content['id'])
         except:
             resp = {
@@ -199,14 +169,11 @@ def createGate():
                 'errorDescription' : 'Couldn´t access database.'
             }
             return jsonify(resp)
-        print(resp.json())
         return jsonify(resp.json())
 
 
 @app.route("/userapp", methods=["GET"])
 def userapp(): 
-    print (session)
-    print("imgonnatry user") 
     try:
         user = session["username"]
         secret = session["secret"]
@@ -218,8 +185,12 @@ def userapp():
         userdata = {
             'id' : user
         }
-        #comparar com a DB
-        resp = requests.get("http://localhost:6000/users/validUser",json = userdata)
+
+        try:
+            resp = requests.get("http://localhost:6000/users/validUser",json = userdata)
+        except:
+            return redirect(url_for(".home"))
+
         userInfo = resp.json()
         if (userInfo['errorCode']==0):
             if(userInfo['userId']==user and userInfo['userSecret']==secret):
@@ -239,13 +210,17 @@ def gateapp():
 @app.route("/API/gateapp/code", methods=["POST"])
 def gatecode(): 
     if request.method=='POST':
-        userinfo = request.get_json()
-        print(type(userinfo))
-        print("\n\n\n\n\n")
-        print(userinfo)
-        print(userinfo[0])
-        print(userinfo[1])
-        print("\n\n\n\n\n")
+        try:
+            userinfo = request.get_json()
+            userinfo[0]["id"]
+            userinfo[0]["code"]
+            userinfo[1]["gate_id"]
+        except:
+            resp = {
+                'errorCode' : 9,
+                'errorDescription' : '!!! Bad form !!!'
+            }
+            return jsonify(resp)
 
         userdata = {
             'id' : userinfo[0]["id"],
@@ -275,26 +250,25 @@ def gatecode():
         }
 
     try:
-        respo = requests.put("http://localhost:8000/gates/newEvent",json = eventData)
+        requests.put("http://localhost:8000/gates/newEvent",json = eventData)
     except:
         resp = {
             'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'  
         }
     
-
-    #time.sleep(5)
     return jsonify(resp)
         
 
 @app.route("/gateapp/gate", methods=["POST"])
 def gate(): 
-        form_content = request.get_json()
+        
         try:
+            form_content = request.get_json()
             id= int(form_content['id'])
         except:
             resp = {
-                'errorCode' : 92,
+                'errorCode' : 9,
                 'errorDescription' : '!!! Bad form !!!'
             }
             return jsonify(resp)
@@ -302,7 +276,7 @@ def gate():
         if not form_content or not form_content['id'] or not form_content['secret']:
             
             resp = {
-                'errorCode' : 91,
+                'errorCode' : 9,
                 'errorDescription' : '!!! Bad form !!!'
             }
             return jsonify(resp)
@@ -341,12 +315,12 @@ def code_gen():
     }
     try:
         resp = requests.put("http://localhost:6000/users/qrcode",json = user_info)
+        response = resp.json()
     except:
         resp = {
             'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'
         } 
-    response = resp.json()
     if response['errorCode'] == 0:
         return jsonify(user_info)
     else:
@@ -357,12 +331,13 @@ def history():
     info = {"user" : session["username"]}
     try:
         resp = requests.get("http://localhost:6000/users/history",json =info)
+        response = resp.json()
     except:
         resp = {
             'errorCode' : 7,
             'errorDescription' : 'Couldn´t access database.'
         } 
-    response = resp.json()
+    
 
     return response  
 
