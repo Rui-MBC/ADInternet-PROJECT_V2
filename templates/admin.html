@@ -19,10 +19,14 @@
     <script type="text/javascript">
         $(document).ready(function(){
             $("#creategate").click(function(){
+                $("#create_error").hide();
+                $("#create_success").hide();
                 $("#activity").hide();
                 $("#formgate").show();
             });
             $("#showhistory").click(function(){
+                $("#create_error").hide();
+                $("#create_success").hide();
                 $("#formgate").hide();
                 $("#activity").show();
                 $.ajax({
@@ -61,17 +65,49 @@
         </tbody>
     </table>
 
-    <div style="display: none" id=formgate>
-        <form action = "/adminapp/createGate" method="POST">
-            Gate Id: 
-            <textarea id="id" name="id" rows="1" cols="12">
-            </textarea>
 
-            <p>Gate Location:</p>
-            <textarea id="location" name="location" rows="1" cols="12">
-            </textarea>
-            <p> press the submit button to store the gate on the server</p>
-         <input type="submit">
-        </form>
-    </div>
+
+    <form style="display: none" id=formgate class="ui form">
+        <div class="field">
+          <label>Gate Id:</label>
+          <input type="text" id="id" name="id" placeholder="Gate Id">
+        </div>
+        <div class="field">
+          <label>Gate Location:</label>
+          <input type="text" id="location" name="location" placeholder="Gate Location">
+        </div>
+        <button id=create_button class="ui button" onclick="create();return false">Submit</button>
+    </form>
+
+    <script>
+        function create(){
+        $("#create_error").hide();
+        $("#create_success").hide();
+
+        var form_info={
+            'id':$(".ui.form").form('get field','id').val(),
+            'location':$(".ui.form").form('get field','location').val()
+        };
+        $.ajax({
+          url: '/adminapp/gate',
+          type: "POST",
+          async: false,
+          contentType: "application/json",
+          data: JSON.stringify(form_info),
+          dataType: "json",
+          success: function (data) {
+            if(data["errorCode"] == 0){
+                $("#create_success").text(data["secret"]).show() ;
+            }
+            else{
+                $("#create_error").text(data["errorDescription"]).show() ;
+            }
+            
+          }
+        });
+    }
+    </script>
+
+    <p id = "create_error" style="color:red;font-size:20px;"></p>
+    <p id = "create_success" style="color:green;font-size:20px;"></p>
 </body>

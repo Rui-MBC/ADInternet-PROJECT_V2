@@ -8,20 +8,29 @@ from sqlalchemy.sql.operators import is_precedent
 from sqlalchemy.sql.schema import MetaData
 from sqlalchemy.sql.sqltypes import ARRAY, DateTime
 from werkzeug.utils import secure_filename
-import gateData as gD
-from gateData import session
+import gateData1 as gD
+from gateData1 import session
 import random
 app = Flask(__name__)
 
 
 ###########################
-# GATE DATABASE ENDPOINTS #
+# GATE DATABASE ENDPOINTS #  
 ###########################
 
 
+
+
+
+
+
+
+##vem aqui para verificar o gate, ver se o gate_id e o segredo correspondem
 @app.route("/gates/id", methods = ['GET'])
 def logInGate():
+    
     if request.method == 'GET':
+
         try:
             gateInfo = request.json 
         except:
@@ -30,12 +39,13 @@ def logInGate():
                     'errorDescription':'DataBase had an error with JSON input.'
                 }
             return jsonify(response)
+        
         if not gateInfo:
             resp = {
                 'errorCode' : 5,
-                'errorDescription':'database had an error with JSON input.'
-            }
+                'errorDescription':'database had an error with JSON input.'}
             return jsonify(resp)
+        
         try:
             gateInfo["id"]
             gateInfo["secret"]
@@ -45,33 +55,30 @@ def logInGate():
                 'errorDescription':'database had an error with JSON input.'
             }
             return jsonify(resp)
-        # if not isinstance(gateInfo["id"],int) :
-        #     response = {
-        #             'errorCode':4,
-        #             'errorDescription':'Invalid ID.'
-        #         }
-        #     return jsonify(response)
+
 
         gate = gD.getGateById(gateInfo["id"])
+        
         if gate != None :
             if gate.secret == gateInfo["secret"]:
                 response = {
                     'errorCode':0,
-                    'errorDescription':''
-                }
+                    'errorDescription':'no error'}
             else:
                 response = {
                     'errorCode':1,
-                    'errorDescription':'The secret is not valid for this gate.'
-                }
+                    'errorDescription':'The secret is not valid for this gate.'}
             
         else:
             response = {
                     'errorCode':3,
                     'errorDescription':'No gate found for this ID.'
-                }
+                    }
 
         return jsonify(response)
+
+
+
 
 @app.route("/gates", methods = ['GET','PUT'])
 def createGate( ):
@@ -99,23 +106,20 @@ def createGate( ):
                 'errorDescription':'database had an error with JSON input.'
             }
             return jsonify(resp)
-        sec = random.randint(1000,9999)  
+
         
         if not gD.getGateById(int(gateInfo["id"])):
-            gD.newGate(int(gateInfo["id"]), str(sec) ,gateInfo["location"])
-            success = {
-                'errorCode' : 0,
-                'errorDescription':'',
-                'secret':str(sec)
-
-            }
-            return jsonify(success)
+            gD.newGate(int(gateInfo["id"]), gateInfo["secret"] ,gateInfo["location"])
+            response = {
+                    'errorCode':0,
+                    'errorDescription':''
+                }        
         else:
             response = {
                     'errorCode':4,
                     'errorDescription':'Gate id not available.'
                 }
-            return jsonify(response)
+        return jsonify(response)
         #return str(sec)
     if request.method == 'GET':
         return jsonify(gD.listGate())
@@ -152,7 +156,7 @@ def newEvent( ):
         gD.newEvent(int(eventInfo["gate_id"]),eventInfo["code"],datetime.datetime.now())
         resp = {
                 'errorCode' : 0,
-                'errorDescription':''
+                'errorDescription':'no error'
             }
         return jsonify(resp)
 
@@ -163,4 +167,4 @@ def gatesActivity( ):
     return {"list" : gates_list}
     
 if __name__ == "__main__":
-    app.run(host = 'localhost', port = 8000, debug = True)    
+    app.run(host = 'localhost', port = 8001, debug = True)    

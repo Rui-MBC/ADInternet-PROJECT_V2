@@ -19,65 +19,149 @@
             ); 
         });
 
-    function wait(ms)
-    {
-        console.log("b4");
+//     function wait(ms)
+//     {
+//         console.log("b4");
 
-        var d = new Date();
-        var d2 = null;
-        do { d2 = new Date(); }
-        while(d2-d < ms);
-        console.log("after");
+//         var d = new Date();
+//         var d2 = null;
+//         do { d2 = new Date(); }
+//         while(d2-d < ms);
+//         console.log("after");
 
     
-    };
+//     };
 
-function showResult(code){
-    if(code == 0){
-        //$("#error").hide();
-        console.log("ola");
-        console.log("ola1");
-        $("#confirm").show();
-    }
-    else{
-        console.log("ola1");
-        //html5QrcodeScanner.pause();
-        $("#error").show();
+// function showResult(code){
+//     if(code == 0){
+//         //$("#error").hide();
+//         console.log("ola");
+//         console.log("ola1");
+//         $("#confirm").show();
+//     }
+//     else{
+//         console.log("ola1");
+//         //html5QrcodeScanner.pause();
+//         $("#error").show();
 
-    }
-   // html5QrcodeScanner.pause();
-    //html5QrcodeScanner.resume();
-    //html5QrcodeScanner.pause();
-};
+//     }
+//    // html5QrcodeScanner.pause();
+//     //html5QrcodeScanner.resume();
+//     //html5QrcodeScanner.pause();
+// };
 
-function hideResult(){
-    $("#confirm").hide();
-    $("#error").hide();
-};
+// function hideResult(){
+//     $("#confirm").hide();
+//     $("#error").hide();
+// };
     </script>
 
 </header>
 
 
 <body>
-    <div id=formgate>
-        <form action = "/gateapp/gate" method="POST">
-            Gate Id: 
-            <textarea id="id" name="id" rows="1" cols="12">
-            </textarea>
+
     
-            <p>Gate Secret:</p>
-            <textarea id="secret" name="secret" rows="1" cols="12">
-            </textarea>
-            <p> press the submit button to store the gate on the server</p>
-         <input type="submit">
-        </form>
-    </div>
+    
+    <form id=gate_auth class="ui form">
+        <div class="field">
+          <label>Gate Id:</label>
+          <input type="text" id="id" name="id" placeholder="Gate Id">
+        </div>
+        <div class="field">
+          <label>Gate secret:</label>
+          <input type="text" id="secret" name="secret" placeholder="Gate secret">
+        </div>
+        <button id=auth_button class="ui button" onclick="validation();return false">Submit</button>
+    </form>
+
+    <script>
+        function validation(){
+        console.log("será?");
+        console.log($(".ui.form").form('get field','id').val());
+        console.log($(".ui.form").form('get field','secret').val());
+        console.log("será?");
+
+        var form_info={
+            'id':$(".ui.form").form('get field','id').val(),
+            'secret':$(".ui.form").form('get field','secret').val()
+        };
+        $.ajax({
+          url: '/gateapp/gate',
+          type: "POST",
+          async: false,
+          contentType: "application/json",
+          data: JSON.stringify(form_info),
+          dataType: "json",
+          success: function (data) {
+            if(data["errorCode"] == 0){
+                console.log("enter gate")
+
+                $("#form_error").hide();
+                $("#gate_auth").hide();
+                $("#gate_id").text($(".ui.form").form('get field','id').val());
+                var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+                html5QrcodeScanner.render(onScanSuccess);
+            }
+            else{
+                console.log("fail gate")
+                $("#form_error").text(data["errorDescription"]).show() ;
+            }
+            
+          }
+        });
+    }
+    </script>
+
+    <!-- <script>
+        $(".ui.form").form({onclick: function(){
+        console.log("será?");
+        console.log($(".ui.form").form('get field','id').val());
+        console.log($(".ui.form").form('get field','secret').val());
+        console.log("será?");
+
+        form_info={
+            'id':str($(".ui.form").form('get field','id').val()),
+            'secret':str($(".ui.form").form('get field','secret').val())
+        };
+        $.ajax({
+          url: '/gateapp/gate',
+          type: "POST",
+          async: false,
+          contentType: "application/json",
+          data: form_info,
+          dataType: "json",
+          success: function (data) {
+            if(data["errorCode"] == 0){
+                console.log("enter gate")
+
+
+                var d = new Date();
+         var d2 = null;
+         do { d2 = new Date(); }
+         while(d2-d < 2000);
+
+                $("#form_error").hide();
+                $("#gate_auth").hide();
+                var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+                html5QrcodeScanner.render(onScanSuccess);
+            }
+            else{
+                console.log("fail gate")
+                $("#form_error").text(data["errorDescription"]).show() ;
+            }
+            
+          }
+        });
+    }})
+    </script> -->
+
+    <p id = "form_error" style="display: none"></p>
 
     
     <div id="qr-reader" style="width: 600px"></div>
 
-    <div id="gate_id" style="visibility: hidden; display:inline;">{{gate_id}} </div>
+    <p id="gate_id" style="visibility: hidden; display:inline;"> </p>
 
    
    
@@ -85,27 +169,20 @@ function hideResult(){
     <p id="error" style="display: none;color:red">Invalid Code, Try Again</p>
     <p id="confirm"  style="display: none;color:green">Tem 5 segundos</p>
 
-    
-    <!-- <div id="confirawefrm">
-        <i  class="check icon" style="color:green;width: 600px"></i>
-        <p  style="color:green">Tem 5 segundos</p>
-    </div> -->
 
     <script>
 
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Code scanned = ${decodedText}`, decodedResult);
             console.log('gate_id=',document.getElementById("gate_id").innerHTML);
-            msg = "["+decodedText + ",{\"gate_id\" : \"" + document.getElementById("gate_id").innerHTML+"\"}]"
+            msg = "["+decodedText + ",{\"gate_id\" : \"" + $("#gate_id").text()+"\"}]"
             console.log(msg);
             $.ajax({
                 url: '/API/gateapp/code',
                 type: "POST",
                 async: false,
-                //processData: false,
                 contentType: "application/json",
                 data: msg,
-                //gate_id:document.getElementById("conas").innerHTML, //preciso do gate id para por na dB dos gates que o user entrou
                 dataType: "json",
                 success: function (data) {
                     $("#confirm").hide();
@@ -125,34 +202,12 @@ function hideResult(){
                     }             
                 },
             });
-            //$("#error").show();
-            //$("#confirm").show();
-
-            //wait(5000);
-            //$("#error").hide();
-            //$("#confirm").hide();
             console.log("out")
         };
 
-        var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
+        
     </script>
 
 </body>
 
-
-
-<!-- <div id=formgate>
-    <form action = "/adminapp/createGate" method="POST">
-        Gate Id: 
-        <textarea id="id" name="id" rows="1" cols="12">
-        </textarea>
-
-        <p>Gate Secret:</p>
-        <textarea id="secret" name="secret" rows="1" cols="12">
-        </textarea>
-        <p> press the submit button to store the gate on the server</p>
-     <input type="submit">
-    </form>
-</div> -->
 </html>

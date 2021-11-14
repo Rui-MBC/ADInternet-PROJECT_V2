@@ -154,7 +154,7 @@ def adminapp():
 def returnsActivity():
     print("uno")
     try:
-        resp = requests.put("http://localhost:8000/gates/activity" )
+        resp = requests.get("http://localhost:8000/gates/activity" )
         print("dos")
     except:
         print("tres")
@@ -166,10 +166,10 @@ def returnsActivity():
     print(resp.json())
     return resp.json()
 
-@app.route("/adminapp/createGate",methods = ['GET','POST'])
+@app.route("/adminapp/gate",methods = ['GET','POST'])
 def createGate():  
     if request.method == 'POST':
-        form_content = request.form.to_dict()
+        form_content = request.get_json()
         try:
             id= int(form_content['id'])
         except:
@@ -233,7 +233,7 @@ def userapp():
 
 @app.route("/gateapp", methods=["GET"])
 def gateapp():   
-    return render_template('gate.html')
+    return render_template('qr_read.html')
 
 
 @app.route("/API/gateapp/code", methods=["POST"])
@@ -286,14 +286,10 @@ def gatecode():
     #time.sleep(5)
     return jsonify(resp)
         
-        
-
-
 
 @app.route("/gateapp/gate", methods=["POST"])
 def gate(): 
-
-        form_content = request.form.to_dict()
+        form_content = request.get_json()
         try:
             id= int(form_content['id'])
         except:
@@ -321,13 +317,12 @@ def gate():
         except:
             resp = {
                 'errorCode' : 7,
-            'errorDescription' : 'Couldn´t access database.'
+                'errorDescription' : 'Couldn´t access database.'
                  
             }
-            return jsonify(resp.json())  
+            return jsonify(resp)  
 
-
-        return render_template('qr_read.html', gate_id=form_content['id'] )
+        return jsonify(resp.json())
 
 
 
